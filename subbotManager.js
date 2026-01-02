@@ -371,7 +371,6 @@ function promotePairedSocket({ socket, id, sessionPath, ownerJid, saveCreds }) {
 
         const isCommand = String(texto || '').trim().startsWith(String(usedPrefix || '.'))
 
-        // ⚡ En grupos grandes: no llames handleMessage si no es comando.
         if (!isCommand) {
           void applyModeration(socket, msg, texto).catch(() => {})
           continue
@@ -512,10 +511,9 @@ async function startSubbot(id, sessionPath, info, opts = {}) {
     markOnlineOnConnect: false,
     emitOwnEvents: false,
 
-    // ⚡ Rendimiento en grupos grandes (BLY)
     enableParallelMessageProcessing: true,
-    // Subbots comparten la misma máquina: 6 evita saturar CPU si hay varios subbots
-    maxParallelMessageThreads: 6
+
+    maxParallelMessageThreads: 7
   })
 
   socket.isSubBot = true
