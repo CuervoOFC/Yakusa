@@ -184,8 +184,8 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       chatId,
       { 
         audio: audioBuffer, 
-        mimetype: mime, 
-        fileName: `${apiTitle}.mp3`,
+        mimetype: "audio/mp4", 
+        //fileName: `${apiTitle}.mp3`,
         ptt: false 
       },
       { quoted: m }
