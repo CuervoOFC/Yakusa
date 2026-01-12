@@ -143,7 +143,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   // --- INTENTO 1: ADONIX ---
   if (apiKey) {
     try {
-      const apiUrl = `https://api-adonix.ultraplus.click/download/ytaudio?apikey=${encodeURIComponent(String(apiKey))}&url=${encodeURIComponent(String(ytUrl))}`
+      const apiUrl = `https://api-adonix.ultraplus.click/download/ytaudio?apikey=AdonixKey59mrf95244&url=${encodeURIComponent(String(ytUrl))}`
       const apiResp = await fetchJson(apiUrl, HTTP_TIMEOUT_MS)
       if (apiResp?.status && apiResp?.data?.url) {
         directUrl = String(apiResp.data.url)
