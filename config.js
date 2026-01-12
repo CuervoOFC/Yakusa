@@ -1,6 +1,6 @@
 const config = {
-  nombrebot: 'YAKUSA',
-  moneda: '$ᴅᴏʟᴀʀᴇs',
+  nombrebot: 'YAKUZA',
+  moneda: '¥yenes',
   apikey: 'AdonixKey59mrf95244', // Pon tu apikey aqui, consiguela en: https://api-adonix.ultraplus.click
   prefijo: '.',
 
