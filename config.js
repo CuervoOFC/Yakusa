@@ -6,8 +6,8 @@ const config = {
 
   owner: [
     '156981591593126@lid',
-    '50493732693@s.whatsapp.net',
-    '51921826291@s.whatsapp.net'
+    '5016613065@s.whatsapp.net',
+    '50232749621@s.whatsapp.net'
   ],
 
   restrict: false
