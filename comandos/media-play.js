@@ -181,12 +181,12 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
   // --- DESCARGA Y ENVÍO DEL BUFFER ---
   try {
-    const audioBuffer = await fetchBuffer(directUrl)
+    const audioBuffer = await fetchBuffer(directUrl, HTTP_TIMEOUT_MS)
     const mime = guessMimeFromUrl(directUrl)
 
     await conn.sendMessage(
       chatId,
-      { audio: { url: audioBuffer }, mimetype: "audio/mpeg", fileName: `${encodeURIComponent(String(ytUrl))}.mp3` },
+      { audio: audioBuffer, mimetype: mime, fileName: `${title}.mp3` },
       { quoted: m }
     )
     await conn.sendMessage(chatId, { react: { text: '✔️', key: m.key } }).catch(() => {})
