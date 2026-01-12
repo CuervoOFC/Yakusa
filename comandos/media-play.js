@@ -40,11 +40,11 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     const response = await axios.get(apiUrl)
     const json = response.data 
     
-    if (!json.status || !json.result) {
+    if (!json.status || !json.result.download) {
         throw new Error('La API no devolvió un enlace válido.')
     }
 
-    let downloadUrl = json.result
+    let downloadUrl = json.result.download
     let title = videoInfo.title || 'Archivo'
     let thumbnail = videoInfo.thumbnail || videoInfo.image || ''
     let duration = videoInfo?.timestamp || 'Desconocida'
