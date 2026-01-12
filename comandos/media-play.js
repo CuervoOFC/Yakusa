@@ -120,7 +120,7 @@ const handler = async (m, { conn, text, command }) => {
 
   try {
 
-    if (!text.trim()) return conn.reply(m.chat, 'Ingresa el nombre de la música a descargar.', m, rcanal);
+    if (!text.trim()) return m.reply('Ingresa el nombre de la música a descargar.');
 
     const search = await yts(text);
 
