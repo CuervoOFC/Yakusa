@@ -96,7 +96,7 @@ export default function groupAvisos(sock) {
     return next
   }
 
-  const THUMB_URL = 'comando.https://files.cloudkuimages.guru/images/9dd98cbaa3a0.jpg'
+  const THUMB_URL = 'https://files.cloudkuimages.guru/images/9dd98cbaa3a0.jpg'
   let THUMB_BUF = null
 
   const fetchThumbBuffer = async () => {
