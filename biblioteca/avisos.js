@@ -96,7 +96,7 @@ export default function groupAvisos(sock) {
     return next
   }
 
-  const THUMB_URL = 'https://files.catbox.moe/gae9se'
+  const THUMB_URL = 'comando.https://files.cloudkuimages.guru/images/9dd98cbaa3a0.jpg'
   let THUMB_BUF = null
 
   const fetchThumbBuffer = async () => {
@@ -124,8 +124,8 @@ export default function groupAvisos(sock) {
         title: '➤; 𝗔𝗩𝗜𝗦𝗢𝗦 .☆',
         body: '',
         thumbnail: thumbnail || undefined,
-        thumbnailUrl: 'https://chat.whatsapp.com/FI1v7MbMr2rJ1bdgZ8rvrJ',
-        sourceUrl: 'https://chat.whatsapp.com/FI1v7MbMr2rJ1bdgZ8rvrJ',
+        thumbnailUrl: 'https://whatsapp.com/channel/0029VaM09iJ8F2pDE8GCaB3V',
+        sourceUrl: 'https://whatsapp.com/channel/0029VaM09iJ8F2pDE8GCaB3V',
         mediaType: 1,
         renderLargerThumbnail: false
       }
