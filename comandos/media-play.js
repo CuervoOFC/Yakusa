@@ -113,7 +113,7 @@ let details = `
               fileName: `${title}.mp4`,
               mimetype: 'video/mp4',
               caption: `✅ ${title} entregado desde *Documento*`,
-              thumbnail: thumb
+              thumbnailUrl: thumbnail
             };
 
             await conn.sendMessage(m.chat, objeto, { quoted: m });
