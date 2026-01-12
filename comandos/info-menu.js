@@ -332,7 +332,7 @@ let handler = async (m, { conn }) => {
           interactiveMessage: {
             header,
             body: { text: menuText },
-            footer: { text: 'Hecho por *Ado* :D' },
+            footer: { text: 'Hecho por *ᴛʜᴇᴅᴇᴠɪʟ ⁺⁵⁰¹/⁽ᶜᵘᵉʳᵛᵒᴼᶠᶜ⁴⁰⁴⁾* :D' },
             contextInfo,
             nativeFlowMessage: {
               buttons: [
