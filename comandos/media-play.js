@@ -130,7 +130,7 @@ const handler = async (m, { conn, text, command }) => {
 
     const { title, thumbnail, timestamp, views, ago, url } = videoInfo;
 
-    const thumb = (await conn.getFile(thumbnail)).data;
+    const thumb = thumbnail;
 
     const vistaTexto = formatViews(views);
 
