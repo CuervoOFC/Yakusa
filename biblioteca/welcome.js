@@ -132,7 +132,7 @@ export default function groupWelcome(sock) {
         ppUrl = null
       }
 
-      const fallback = 'https://files.catbox.moe/0gog3y'
+      const fallback = 'https://files.cloudkuimages.guru/images/9dd98cbaa3a0.jpg'
       const thumbSource = ppUrl || fallback
 
       let thumbnailBuffer = null
@@ -175,8 +175,8 @@ export default function groupWelcome(sock) {
             title: isBye ? '❏⏤͟͟͞͞ 𝖣𝖤𝖲𝖯𝖤𝖣𝖨𝖣𝖠 D:⏤͟͟͞͞☆' : '❏⏤͟͟͞͞ 𝖶𝖤𝖫𝖢𝖮𝖬𝖤 :𝖣⏤͟͟͞͞☆',
             body: 'Invitación al grupo oficial',
             thumbnail: thumbnailBuffer,
-            thumbnailUrl: 'https://chat.whatsapp.com/FI1v7MbMr2rJ1bdgZ8rvrJ',
-            sourceUrl: 'https://chat.whatsapp.com/FI1v7MbMr2rJ1bdgZ8rvrJ',
+            thumbnailUrl: 'https://whatsapp.com/channel/0029VaM09iJ8F2pDE8GCaB3V',
+            sourceUrl: 'https://whatsapp.com/channel/0029VaM09iJ8F2pDE8GCaB3V',
             mediaType: 1,
             renderLargerThumbnail: true
           }
