@@ -3,7 +3,7 @@ import yts from 'yt-search'
 
 let handler = async (m, { conn, args, command, usedPrefix }) => {
   if (!args[0]) return m.reply(`✅ Uso correcto: ${usedPrefix + command} <enlace o nombre>`)
-
+try {
     let url = args[0]
     let videoInfo = null
 
