@@ -177,13 +177,13 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
   // --- ENVÍO FINAL ---
   try {
-    const audioBuffer = await fetchBuffer(directUrl, HTTP_TIMEOUT_MS)
+    const audioBuffer = directUrl
     const mime = guessMimeFromUrl(directUrl)
 
     await conn.sendMessage(
       chatId,
       { 
-        audio: audioBuffer, 
+        audio: { url: audioBuffer }, 
         mimetype: "audio/mp4", 
         //fileName: `${apiTitle}.mp3`,
         ptt: false 
