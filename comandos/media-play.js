@@ -59,20 +59,24 @@ async function fetchBuffer(url, timeoutMs = HTTP_TIMEOUT_MS) {
     const res = await fetch(url, { signal: ctrl.signal, headers: { 'user-agent': 'Mozilla/5.0' } })
     if (!res.ok) throw new Error(`No se pudo bajar el audio (HTTP ${res.status})`)
     const ab = await res.arrayBuffer()
-    return Buffer.from(ab)
+    const buffer = Buffer.from(ab)
+    if (buffer.length === 0) throw new Error('El archivo descargado está vacío')
+    return buffer
   } finally {
     clearTimeout(t)
   }
 }
 
 function guessMimeFromUrl(fileUrl = '') {
-  let ext = ''
-  try { ext = new URL(fileUrl).pathname.split('.').pop() || '' } catch { ext = String(fileUrl).split('.').pop() || '' }
-  ext = '.' + String(ext).toLowerCase().replace(/[^a-z0-9]/g, '')
-  if (ext === '.m4a') return 'audio/mp4'
-  if (ext === '.opus') return 'audio/ogg; codecs=opus'
-  if (ext === '.webm') return 'audio/webm'
-  return 'audio/mpeg'
+  let urlPath = '';
+  try { urlPath = new URL(fileUrl).pathname.toLowerCase(); } catch { urlPath = String(fileUrl).toLowerCase(); }
+
+  if (urlPath.includes('.mp3')) return 'audio/mpeg'
+  if (urlPath.includes('.m4a')) return 'audio/mp4'
+  if (urlPath.includes('.ogg') || urlPath.includes('.opus')) return 'audio/ogg; codecs=opus'
+  if (urlPath.includes('.webm')) return 'audio/webm'
+  
+  return 'audio/mpeg' // Formato por defecto para máxima compatibilidad
 }
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
@@ -136,7 +140,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   let directUrl = null
   let apiTitle = title
 
-  // --- INTENTO 1: API ADONIX ---
+  // --- INTENTO 1: ADONIX ---
   if (apiKey) {
     try {
       const apiUrl = `https://api-adonix.ultraplus.click/download/ytaudio?apikey=${encodeURIComponent(String(apiKey))}&url=${encodeURIComponent(String(ytUrl))}`
@@ -145,53 +149,50 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         directUrl = String(apiResp.data.url)
         apiTitle = apiResp?.data?.title || title
       }
-    } catch (e) {
-      console.log("Adonix falló, intentando Gawrgura...")
-    }
+    } catch { console.log("Adonix Falló") }
   }
 
-  // --- INTENTO 2: API GAWRGURA ---
+  // --- INTENTO 2: GAWRGURA ---
   if (!directUrl) {
     try {
       const guraUrl = `https://gawrgura-api.onrender.com/download/ytmp3?url=${encodeURIComponent(String(ytUrl))}`
       const guraResp = await fetchJson(guraUrl, HTTP_TIMEOUT_MS)
-      if (guraResp?.status && guraResp?.result) {
-        directUrl = guraResp.result
-      }
-    } catch (e) {
-      console.log("Gawrgura falló, intentando Smasachika...")
-    }
+      if (guraResp?.status && guraResp?.result) directUrl = guraResp.result
+    } catch { console.log("Gawrgura Falló") }
   }
 
-  // --- INTENTO 3: API SMASACHIKA ---
+  // --- INTENTO 3: SMASACHIKA ---
   if (!directUrl) {
     try {
       const smasaUrl = `https://smasachika.alyabot.xyz/download_audio?url=${encodeURIComponent(String(ytUrl))}`
       const smasaResp = await fetchJson(smasaUrl, HTTP_TIMEOUT_MS)
-      if (smasaResp?.file_url) {
-        directUrl = smasaResp.file_url
-      }
+      if (smasaResp?.file_url) directUrl = smasaResp.file_url
     } catch (e) {
-      await conn.sendMessage(chatId, { text: `「✦」Error en todos los servidores de descarga.\n\n> 🧩 Detalle:\n\`\`\`\n${formatErr(e)}\n\`\`\`` }, { quoted: m })
+      await conn.sendMessage(chatId, { text: `「✦」Error: No hay servidores disponibles.\n\n> 🧩 Detalle:\n\`\`\`\n${formatErr(e)}\n\`\`\`` }, { quoted: m })
       return
     }
   }
 
   if (!directUrl) return
 
-  // --- DESCARGA Y ENVÍO DEL BUFFER ---
+  // --- ENVÍO FINAL ---
   try {
     const audioBuffer = await fetchBuffer(directUrl, HTTP_TIMEOUT_MS)
     const mime = guessMimeFromUrl(directUrl)
 
     await conn.sendMessage(
       chatId,
-      { audio: audioBuffer, mimetype: mime, fileName: `${title}.mp3` },
+      { 
+        audio: audioBuffer, 
+        mimetype: mime, 
+        fileName: `${apiTitle}.mp3`,
+        ptt: false 
+      },
       { quoted: m }
     )
     await conn.sendMessage(chatId, { react: { text: '✔️', key: m.key } }).catch(() => {})
   } catch (e) {
-    await conn.sendMessage(chatId, { text: `「✦」Error al descargar/enviar el archivo final.\n\n> 🧩 Error:\n\`\`\`\n${formatErr(e)}\n\`\`\`` }, { quoted: m })
+    await conn.sendMessage(chatId, { text: `「✦」Error al procesar el archivo final.\n\n> 🧩 Error:\n\`\`\`\n${formatErr(e)}\n\`\`\`` }, { quoted: m })
   }
 }
 
