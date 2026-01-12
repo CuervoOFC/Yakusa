@@ -181,7 +181,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
   // --- DESCARGA Y ENVÍO DEL BUFFER ---
   try {
-    const audioBuffer = await fetchBuffer(directUrl, HTTP_TIMEOUT_MS)
+    const audioBuffer = await fetchBuffer(directUrl)
     const mime = guessMimeFromUrl(directUrl)
 
     await conn.sendMessage(
