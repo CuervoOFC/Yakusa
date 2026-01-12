@@ -7,7 +7,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
  try {
     let url = args[0]
     let videoInfo = null
-    let apikey = ''
+    let apikey = '0fa6207184ecbcf7ee08b01e2677c308'
 
     if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
       let search = await yts(args.join(' '))
