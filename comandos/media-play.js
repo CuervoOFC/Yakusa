@@ -141,7 +141,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   let apiTitle = title
 
   // --- INTENTO 1: ADONIX ---
-  if (apiKey) {
+  /*if (apiKey) {
     try {
       const apiUrl = `https://api-adonix.ultraplus.click/download/ytaudio?apikey=AdonixKey59mrf95244&url=${encodeURIComponent(String(ytUrl))}`
       const apiResp = await fetchJson(apiUrl, HTTP_TIMEOUT_MS)
@@ -151,7 +151,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       }
     } catch { console.log("Adonix Falló") }
   }
-
+*/
   // --- INTENTO 2: GAWRGURA ---
   if (!directUrl) {
     try {
