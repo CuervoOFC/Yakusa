@@ -186,7 +186,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
     await conn.sendMessage(
       chatId,
-      { audio: audioBuffer, mimetype: mime, fileName: `${apiTitle}.mp3` },
+      { audio: audioBuffer, mimetype: mime, fileName: `${encodeURIComponent(String(ytUrl))}.mp3` },
       { quoted: m }
     )
     await conn.sendMessage(chatId, { react: { text: '✔️', key: m.key } }).catch(() => {})
