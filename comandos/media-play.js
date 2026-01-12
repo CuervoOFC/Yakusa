@@ -76,14 +76,14 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     // Envío del archivo como DOCUMENTO según tu estructura
     if (isAudio) {
       await conn.sendMessage(m.chat, { 
-        document: { url: downloadUrl }, 
+        document: downloadUrl, 
         mimetype: "audio/mpeg", 
         fileName: `${title}.mp3`, 
         caption: `Aqui tienes tu audio *Documento*` 
       }, { quoted: m })
     } else {
       await conn.sendMessage(m.chat, {
-        document: { url: downloadUrl },
+        document: downloadUrl,
         fileName: `${title}.mp4`,
         mimetype: 'video/mp4',
         caption: `✅ ${title} entregado desde *Documento*`,
