@@ -1,203 +1,101 @@
+import axios from 'axios'
 import yts from 'yt-search'
 
-const MAX_SECONDS = 90 * 60
-const HTTP_TIMEOUT_MS = 90 * 1000
+let handler = async (m, { conn, args, command, usedPrefix }) => {
+  if (!args[0]) return m.reply(`✅ Uso correcto: ${usedPrefix + command} <enlace o nombre>`)
 
-function parseDurationToSeconds(d) {
-  if (d == null) return null
-  if (typeof d === 'number' && Number.isFinite(d)) return Math.max(0, Math.floor(d))
-  const s = String(d).trim()
-  if (!s) return null
-  if (/^\d+$/.test(s)) return Math.max(0, parseInt(s, 10))
-  const parts = s.split(':').map((x) => x.trim()).filter(Boolean)
-  if (!parts.length || parts.some((p) => !/^\d+$/.test(p))) return null
-  let sec = 0
-  for (const p of parts) sec = sec * 60 + parseInt(p, 10)
-  return Number.isFinite(sec) ? sec : null
-}
+    let url = args[0]
+    let videoInfo = null
 
-function formatErr(err, maxLen = 1500) {
-  const e = err ?? 'Error desconocido'
-  let msg = ''
-  if (e instanceof Error) msg = e.stack || `${e.name}: ${e.message}`
-  else if (typeof e === 'string') msg = e
-  else {
-    try { msg = JSON.stringify(e, null, 2) } catch { msg = String(e) }
-  }
-  msg = String(msg || 'Error desconocido').trim()
-  if (msg.length > maxLen) msg = msg.slice(0, maxLen) + '\n... (recortado)'
-  return msg
-}
-
-async function fetchJson(url, timeoutMs = HTTP_TIMEOUT_MS) {
-  const ctrl = new AbortController()
-  const t = setTimeout(() => ctrl.abort(), timeoutMs)
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      signal: ctrl.signal,
-      headers: { accept: 'application/json', 'user-agent': 'Mozilla/5.0' }
-    })
-    const text = await res.text().catch(() => '')
-    let data = null
-    try { data = text ? JSON.parse(text) : null } catch { data = null }
-    if (!res.ok) {
-      const msg = data?.message || data?.error || text || `HTTP ${res.status}`
-      throw new Error(`HTTP ${res.status}: ${String(msg).slice(0, 400)}`)
-    }
-    if (data == null) throw new Error('Respuesta JSON inválida')
-    return data
-  } finally {
-    clearTimeout(t)
-  }
-}
-
-async function fetchBuffer(url, timeoutMs = HTTP_TIMEOUT_MS) {
-  const ctrl = new AbortController()
-  const t = setTimeout(() => ctrl.abort(), timeoutMs)
-  try {
-    const res = await fetch(url, { signal: ctrl.signal, headers: { 'user-agent': 'Mozilla/5.0' } })
-    if (!res.ok) throw new Error(`No se pudo bajar el audio (HTTP ${res.status})`)
-    const ab = await res.arrayBuffer()
-    const buffer = Buffer.from(ab)
-    if (buffer.length === 0) throw new Error('El archivo descargado está vacío')
-    return buffer
-  } finally {
-    clearTimeout(t)
-  }
-}
-
-function guessMimeFromUrl(fileUrl = '') {
-  let urlPath = '';
-  try { urlPath = new URL(fileUrl).pathname.toLowerCase(); } catch { urlPath = String(fileUrl).toLowerCase(); }
-
-  if (urlPath.includes('.mp3')) return 'audio/mpeg'
-  if (urlPath.includes('.m4a')) return 'audio/mp4'
-  if (urlPath.includes('.ogg') || urlPath.includes('.opus')) return 'audio/ogg; codecs=opus'
-  if (urlPath.includes('.webm')) return 'audio/webm'
-  
-  return 'audio/mpeg' // Formato por defecto para máxima compatibilidad
-}
-
-let handler = async (m, { conn, text, usedPrefix, command }) => {
-  const chatId = m?.chat || m?.key?.remoteJid
-  if (!chatId) return
-
-  if (!text) {
-    return conn.sendMessage(
-      chatId,
-      { text: `「✦」Escribe el nombre o link del video.\n> ✐ Ejemplo » *${usedPrefix + command} lovely*` },
-      { quoted: m }
-    )
-  }
-
-  await conn.sendMessage(chatId, { react: { text: '🕒', key: m.key } }).catch(() => {})
-
-  let ytUrl = text.trim()
-  let ytInfo = null
-
-  try {
-    if (!/youtu\.be|youtube\.com/i.test(ytUrl)) {
-      const search = await yts(ytUrl)
-      const first = search?.videos?.[0]
-      if (!first) {
-        await conn.sendMessage(chatId, { text: '「✦」No se encontraron resultados.' }, { quoted: m })
-        return
-      }
-      ytInfo = first
-      ytUrl = first.url
+    // Búsqueda en YouTube si no es un enlace directo
+    if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+      let search = await yts(args.join(' '))
+      if (!search.videos || search.videos.length === 0) return m.reply('No se encontraron resultados.')
+      videoInfo = search.videos[0]
+      url = videoInfo.url
     } else {
-      const search = await yts({ query: ytUrl, pages: 1 })
-      if (search?.videos?.length) ytInfo = search.videos[0]
+      let id = url.split('v=')[1]?.split('&')[0] || url.split('/').pop()
+      let search = await yts({ videoId: id })
+      if (search && search.title) videoInfo = search
     }
-  } catch (e) {
-    await conn.sendMessage(chatId, { text: `「✦」Error buscando en YouTube.\n\n> 🧩 Error:\n\`\`\`\n${formatErr(e)}\n\`\`\`` }, { quoted: m })
-    return
-  }
 
-  const durSec = parseDurationToSeconds(ytInfo?.duration?.seconds) ?? parseDurationToSeconds(ytInfo?.seconds) ?? parseDurationToSeconds(ytInfo?.duration) ?? parseDurationToSeconds(ytInfo?.timestamp)
-  if (durSec && durSec > MAX_SECONDS) {
-    await conn.sendMessage(chatId, { text: `「✦」Audio muy largo.\n> Máx: ${Math.floor(MAX_SECONDS / 60)} min.` }, { quoted: m })
-    return
-  }
+    // Límite de tiempo (63 minutos)
+    if (videoInfo.seconds > 3780) {
+      return m.reply(`⛔ El video supera el límite de duración permitido (63 minutos).`)
+    }
 
-  const title = ytInfo?.title || 'Audio'
-  const author = ytInfo?.author?.name || ytInfo?.author || 'Desconocido'
-  const duration = ytInfo?.timestamp || 'Desconocida'
-  const thumbnail = ytInfo?.thumbnail
+    let apiUrl = ''
+    let isAudio = false
 
-  const caption = `「✦」Enviando *${title}*\n\n` +
-    `> ❀ Canal » *${author}*\n` +
-    `> ⴵ Duración » *${duration}*\n` +
-    `> 🜸 Link » ${ytUrl}`
+    // Configuración de las nuevas APIs
+    if (command == 'play' || command == 'ytmp3') {
+      apiUrl = `https://api.the-legacy-code.pro/download/ytmp3?url=${encodeURIComponent(url)}`
+      isAudio = true
+    } else if (command == 'play2' || command == 'ytmp4') {
+      apiUrl = `https://api.the-legacy-code.pro/download/ytmp4?url=${encodeURIComponent(url)}`
+    } else {
+      return m.reply('Comando no reconocido.')
+    }
 
-  try {
-    if (thumbnail) await conn.sendMessage(chatId, { image: { url: thumbnail }, caption }, { quoted: m })
-    else await conn.sendMessage(chatId, { text: caption }, { quoted: m })
-  } catch {}
+    // Llamada a la API usando Axios
+    const response = await axios.get(apiUrl)
+    const json = response.data // Axios guarda la respuesta en .data
 
-  const apiKey = globalThis?.apikey
-  let directUrl = null
-  let apiTitle = title
+    // Validación basada en el formato: { status: true, result: "url" }
+    if (!json.status || !json.result) {
+        throw new Error('La API no devolvió un enlace válido.')
+    }
 
-  // --- INTENTO 1: ADONIX ---
-  /*if (apiKey) {
-    try {
-      const apiUrl = `https://api-adonix.ultraplus.click/download/ytaudio?apikey=AdonixKey59mrf95244&url=${encodeURIComponent(String(ytUrl))}`
-      const apiResp = await fetchJson(apiUrl, HTTP_TIMEOUT_MS)
-      if (apiResp?.status && apiResp?.data?.url) {
-        directUrl = String(apiResp.data.url)
-        apiTitle = apiResp?.data?.title || title
+    let downloadUrl = json.result
+    let title = videoInfo.title || 'Archivo'
+    let thumbnail = videoInfo.thumbnail || videoInfo.image || ''
+    let duration = videoInfo?.timestamp || 'Desconocida'
+
+    let details = `
+📌 Título : *${title}*
+📁 Duración : *${duration}*
+📥 Calidad : *Alta*
+🎧 Tipo : *${isAudio ? 'Audio' : 'Video'}*
+🌐 Fuente : *YouTube*`.trim()
+
+    // Enviar mensaje informativo
+    await conn.sendMessage(m.chat, {
+      text: details,
+      contextInfo: {
+        externalAdReply: {
+          title: `${title}`,
+          body: 'Enviando contenido...',
+          thumbnailUrl: thumbnail,
+          sourceUrl: 'https://whatsapp.com/channel/0029VbArz9fAO7RGy2915k3O',
+          mediaType: 1,
+          renderLargerThumbnail: true
+        }
       }
-    } catch { console.log("Adonix Falló") }
-  }
-*/
-  // --- INTENTO 2: GAWRGURA ---
-  if (!directUrl) {
-    try {
-      const guraUrl = `https://gawrgura-api.onrender.com/download/ytmp3?url=${encodeURIComponent(String(ytUrl))}`
-      const guraResp = await fetchJson(guraUrl, HTTP_TIMEOUT_MS)
-      if (guraResp?.status && guraResp?.result) directUrl = guraResp.result
-    } catch { console.log("Gawrgura Falló") }
-  }
+    }, { quoted: m })
 
-  // --- INTENTO 3: SMASACHIKA ---
-  if (!directUrl) {
-    try {
-      const smasaUrl = `https://smasachika.alyabot.xyz/download_audio?url=${encodeURIComponent(String(ytUrl))}`
-      const smasaResp = await fetchJson(smasaUrl, HTTP_TIMEOUT_MS)
-      if (smasaResp?.file_url) directUrl = smasaResp.file_url
-    } catch (e) {
-      await conn.sendMessage(chatId, { text: `「✦」Error: No hay servidores disponibles.\n\n> 🧩 Detalle:\n\`\`\`\n${formatErr(e)}\n\`\`\`` }, { quoted: m })
-      return
+    // Enviar el archivo final
+    if (isAudio) {
+      await conn.sendMessage(m.chat, {
+        audio: { url: downloadUrl },
+        mimetype: 'audio/mpeg',
+        fileName: `${title}.mp3`
+      }, { quoted: m })
+    } else {
+      await conn.sendMessage(m.chat, {
+        video: { url: downloadUrl },
+        mimetype: 'video/mp4',
+        fileName: `${title}.mp4`
+      }, { quoted: m })
     }
-  }
 
-  if (!directUrl) return
-
-  // --- ENVÍO FINAL ---
-  try {
-    const audioBuffer = directUrl
-    const mime = guessMimeFromUrl(directUrl)
-
-    await conn.sendMessage(
-      chatId,
-      { 
-        audio: { url: audioBuffer }, 
-        mimetype: "audio/mp4", 
-        //fileName: `${apiTitle}.mp3`,
-        ptt: false 
-      },
-      { quoted: m }
-    )
-    await conn.sendMessage(chatId, { react: { text: '✔️', key: m.key } }).catch(() => {})
   } catch (e) {
-    await conn.sendMessage(chatId, { text: `「✦」Error al procesar el archivo final.\n\n> 🧩 Error:\n\`\`\`\n${formatErr(e)}\n\`\`\`` }, { quoted: m })
+    console.error('Error en Play:', e)
+    m.reply('❌ Lo siento, hubo un error al procesar tu solicitud con Axios.')
   }
 }
 
-handler.help = ['play <texto|link>']
-handler.tags = ['multimedia']
-handler.command = ['play']
+handler.help = ['play', 'ytmp3', 'play2', 'ytmp4']
+handler.tags = ['downloader']
+handler.command = ['play', 'play2', 'ytmp3', 'ytmp4']
 
 export default handler
