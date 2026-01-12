@@ -136,7 +136,7 @@ const handler = async (m, { conn, text, command }) => {
 
     const mensaje = `*Título:* ${title}\n*Duración:* ${timestamp}\n*Vistas:* ${views}\n*Canal:* ${videoInfo.author.name || 'Desconocido'}\n*Publicado:* ${ago}\n*Enlace:* ${url}`;
 
-    await conn.reply(m.chat, mensaje, m, {
+    await conn.sendMessage(m.chat, mensaje, m, {
 
       contextInfo: {
 
