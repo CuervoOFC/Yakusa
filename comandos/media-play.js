@@ -22,7 +22,7 @@ if (search && search.title) videoInfo = search
 
 }
 
-/ Time limit (63 minutes)
+// Time limit (63 minutes)
 
 if (videoInfo.seconds > 3780) {
 
