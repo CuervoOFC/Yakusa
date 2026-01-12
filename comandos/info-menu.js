@@ -339,22 +339,22 @@ let handler = async (m, { conn }) => {
                 {
                   name: 'cta_url',
                   buttonParamsJson: JSON.stringify({
-                    display_text: '𝗛𝗮𝘇𝘁𝗲 𝗦𝘂𝗯𝗕𝗼𝘁',
-                    url: 'https://meow.hostrta.win'
+                    display_text: 'BOT NUEVO??',
+                    url: 'https://bot.the-legacy-code.pro'
                   })
                 },
                 {
                   name: 'cta_url',
                   buttonParamsJson: JSON.stringify({
-                    display_text: '𝗖𝗮𝗻𝗮𝗹',
-                    url: 'https://whatsapp.com/channel/0029Vb75yXeKbYMVbG6Gjv3w'
+                    display_text: 'Canal Moon&Stars',
+                    url: 'https://whatsapp.com/channel/0029VaM09iJ8F2pDE8GCaB3V'
                   })
                 },
                 {
                   name: 'cta_url',
                   buttonParamsJson: JSON.stringify({
-                    display_text: '𝗢𝗽𝗲𝗻 𝗦𝗼𝘂𝗿𝗰𝗲',
-                    url: 'https://github.com/Ado21/WaMeowBot'
+                    display_text: 'Grupo Moon&Stars',
+                    url: 'https://chat.whatsapp.com/KxHlg8fxLs8C8ShNFhDmYA'
                   })
                 }
               ]
