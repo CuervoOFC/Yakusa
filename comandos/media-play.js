@@ -7,7 +7,6 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
  try {
     let url = args[0]
     let videoInfo = null
-    let apikey = '0fa6207184ecbcf7ee08b01e2677c308'
 
     if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
       let search = await yts(args.join(' '))
@@ -28,23 +27,23 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     let isAudio = false
 
     if (command == 'play' || command == 'ytmp3') {
-      apiUrl = `https://optishield.uk/api/?type=youtubedl&apikey=${apikey}&url=${encodeURIComponent(url)}&video=0`
+      apiUrl = `https://optishield.uk/api/?type=youtubedl&apikey=0fa6207184ecbcf7ee08b01e2677c308&url=${encodeURIComponent(url)}&video=0`
       isAudio = true
     } else if (command == 'play2' || command == 'ytmp4') {
-      apiUrl = `https://optishield.uk/api/?type=youtubedl&apikey=${apikey}&url=${encodeURIComponent(url)}&video=1`
+      apiUrl = `https://optishield.uk/api/?type=youtubedl&apikey=0fa6207184ecbcf7ee08b01e2677c308&url=${encodeURIComponent(url)}&video=1`
     } else {
       return m.reply('Comando no reconocido.')
     }
 
 
     const response = await axios.get(apiUrl)
-    const json = response.data 
+    const json = response.data
     
-    if (!json.status || !json.result.download) {
+    if (!json.status || !json.result) {
         throw new Error('La API no devolvió un enlace válido.')
     }
 
-    let downloadUrl = json.result.download
+    let downloadUrl = json.result.download ? json.result.download : json.result
     let title = videoInfo.title || 'Archivo'
     let thumbnail = videoInfo.thumbnail || videoInfo.image || ''
     let duration = videoInfo?.timestamp || 'Desconocida'
